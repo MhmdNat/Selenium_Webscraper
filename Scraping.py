@@ -2,14 +2,17 @@ import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.keys import Keys
 import io
 from PIL import Image
 import time
+import csv
+import os
 
-#Global variables
-PATH = "C:\\Users\\user 2\\Desktop\\WebScraping Stuff\\chromedriver.exe" #path of chromdriver.exe
-service = Service(PATH) 
-wd = webdriver.Chrome(service=service) #creating a webdriver using chrome driver
+
+PATH = "C:\\Users\\user 2\\Desktop\\WebScraping Stuff\\chromedriver.exe"
+service = Service(PATH)
+wd = webdriver.Chrome(service=service)
 
 
 def get_urls_from_google(wd, delay, max_images):
@@ -55,8 +58,8 @@ def get_urls_from_google(wd, delay, max_images):
             except:
                 continue
                 
-    wd.quit()
-    return image_urls
+
+    return image_urls # return set of image urls
             
         
 def download_image(download_path, url, file_name):
@@ -72,11 +75,70 @@ def download_image(download_path, url, file_name):
         
     except Exception as e:
         print("failed -", e)    
+        
+        
+def get_id(wd, name): #name of target plant
+    '''gets the id of a plant on inaturalist using its name only'''
+    url = "https://www.inaturalist.org/observations?quality_grade=research"
+    wd.get(url) #open page
+    
+    
+    search = wd.find_element(By.CSS_SELECTOR, "input.form-control.ui-autocomplete-input[placeholder='Species']") #find the search bar
+    search.click() # click it
+    search.send_keys(name) # type the name
+    search.send_keys(Keys.RETURN) #type name of plant
+    
+    time.sleep(5) #wait for it to dynamically load
+    plant = wd.find_element(By.CSS_SELECTOR, "li.ac-result a.ac-view") #find the plant
+    
+    href = plant.get_attribute("href") #scrape the link
+    href = href.split('taxa/')
+    plant_id = href[1] #extract the id
+    
+    '''url format becomes https://www.inaturalist.org/observations?quality_grade=research&taxon_id={plant_id}'''
+    return plant_id
 
 
-#Main
-max_photos = 4
-urls = get_urls_from_google(wd, 1, max_photos)
+def read_csv_plants():
+    '''read names from csv file into a list '''
+    with open('C:\\Users\\user 2\\Desktop\\WebScraping Stuff\\Species name.csv', mode = 'r', newline='', encoding = 'utf-8') as file: #open csv file
+        csv_reader = csv.reader(file) # create a reader
+        species_names = [row[0] for row in csv_reader] # read first column in each row
+    return species_names # return a list of all species in csv
 
-for i, url in enumerate(urls):
-    download_image("C:\\Users\\user 2\\Desktop\\WebScraping Stuff\\Imgs/",url, f"{i}.jpg")
+
+def species_name_to_id():
+    '''this is for transferrring the names to ids'''
+    name_id_list = []
+    species = read_csv_plants() # list of specie names read from file
+    
+    for name in species:
+        plant_id = get_id(wd,name) # for each plant get the id
+        name_id_list.append((name,plant_id)) #tuple
+    return name_id_list
+
+
+def new_path(new_path): 
+    '''this just creates a new folder in specified path'''
+    if not os.path.exists(new_path):
+        os.makedirs(new_path)
+    return new_path
+
+        
+def main():
+    plant_name_ids = species_name_to_id() #returns tuple (name, id)
+    
+    for name, ID in plant_name_ids: #for the tuple returned by species_name_to_id
+    
+        page_url = f"https://www.inaturalist.org/observations?quality_grade=research&taxon_id={ID}" # open page using id
+        urls = get_urls_from_google(wd, 4, 3, page_url) # get image urls
+        
+        for i, url in enumerate(urls):
+            path = new_path(f"C:\\Users\\user 2\\Desktop\\WebScraping Stuff\\Imgs\\{name}/") #inserts images into a folder with the name of plant
+            
+            download_image(path,url, f"INATURALIST_{ID}_{i}.jpg") #name of the image with needed format
+            
+    wd.quit() # close webdriver
+
+#start process
+main()
