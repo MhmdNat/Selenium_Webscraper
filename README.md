@@ -4,7 +4,7 @@ A multithreaded web scraper built with **Python** and **Selenium** to extract pl
 
 ---
 
-Features
+##  Features
 
 -  Scrapes high-quality research-grade plant images from INaturalist
 -  Collects metadata: uploader name, upload date, and observation location
@@ -14,7 +14,7 @@ Features
 
 ---
 
-Technologies Used
+## Technologies Used
 
 - Python 3
 - Selenium
@@ -25,7 +25,7 @@ Technologies Used
 
 ---
 
-How to Use
+## How to Use
 
 1. **Clone the repo**  
    ```bash
@@ -53,7 +53,7 @@ How to Use
 
 ---
 
-Output
+## Output
 
 - Folders per species with downloaded `.jpg` images
 - Metadata CSV with columns:  
@@ -61,13 +61,13 @@ Output
 
 ---
 
-Legal Note
+## Legal Note
 
 This tool respects the INaturalist Terms of Service. It includes rate limiting and is intended for academic/research purposes only. Please seek explicit permission if scraping at scale.
 
 ---
 
-Author
+## Author
 
 Mohamad Al Natour  
 [LinkedIn](https://www.linkedin.com/in/muhammad-natour-777a99325/) | [Email](mailto:mhmdnatour06@gmail.com)
